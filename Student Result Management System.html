@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Result Management System</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#141e30,#243b55);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    padding:20px;
+}
+
+.container{
+    width:95%;
+    max-width:850px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(20px);
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.4);
+}
+
+h1{
+    text-align:center;
+}
+
+.subtitle{
+    text-align:center;
+    opacity:.8;
+    margin:10px 0 25px;
+}
+
+.input-group{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.field{
+    display:flex;
+    flex-direction:column;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    outline:none;
+    background:rgba(255,255,255,0.12);
+    color:white;
+}
+
+input:focus{
+    background:rgba(255,255,255,0.2);
+}
+
+.error{
+    color:#ff5252;
+    font-size:12px;
+    margin-top:5px;
+    min-height:16px;
+}
+
+.error-box{
+    border:2px solid #ff5252;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    margin-top:20px;
+    border:none;
+    border-radius:12px;
+    font-size:16px;
+    cursor:pointer;
+    font-weight:bold;
+    background:#00c853;
+    color:white;
+}
+
+button:hover{
+    box-shadow:0 0 20px rgba(0,255,100,0.6);
+}
+
+#report{
+    margin-top:30px;
+}
+
+.report-sheet{
+    background:white;
+    color:black;
+    padding:25px;
+    border-radius:15px;
+}
+
+.report-title{
+    text-align:center;
+    border-bottom:2px solid black;
+    padding-bottom:10px;
+    margin-bottom:20px;
+}
+
+.student-info{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.rank{
+    font-weight:bold;
+    color:#1a237e;
+}
+
+.marks-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.marks-table th,
+.marks-table td{
+    border:1px solid black;
+    padding:10px;
+    text-align:center;
+}
+
+.summary{
+    margin-top:20px;
+    padding:15px;
+    border-top:2px solid black;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎓 Student Result Management System</h1>
+    <p class="subtitle">Manage student records, grades, ranks and performance analysis</p>
+
+    <div class="input-group">
+        <div class="field">
+            <input type="text" id="name" placeholder="Student Name">
+            <small class="error" id="nameError"></small>
+        </div>
+
+        <div class="field">
+            <input type="number" id="roll" placeholder="Roll Number">
+            <small class="error" id="rollError"></small>
+        </div>
+
+        <div class="field">
+            <input type="number" id="class" placeholder="Class">
+            <small class="error" id="classError"></small>
+        </div>
+
+        <div class="field">
+            <input type="text" id="section" placeholder="Section">
+            <small class="error" id="sectionError"></small>
+        </div>
+    </div>
+
+    <h2 style="margin:20px 0;">Subject Marks</h2>
+
+    <div class="input-group">
+        <div class="field">
+            <input type="number" id="math" placeholder="Math">
+            <small class="error" id="mathError"></small>
+        </div>
+
+        <div class="field">
+            <input type="number" id="science" placeholder="Science">
+            <small class="error" id="scienceError"></small>
+        </div>
+
+        <div class="field">
+            <input type="number" id="english" placeholder="English">
+            <small class="error" id="englishError"></small>
+        </div>
+
+        <div class="field">
+            <input type="number" id="computer" placeholder="Computer">
+            <small class="error" id="computerError"></small>
+        </div>
+
+        <div class="field">
+            <input type="number" id="hindi" placeholder="Hindi">
+            <small class="error" id="hindiError"></small>
+        </div>
+    </div>
+
+    <button onclick="generateReport()">Generate Report</button>
+
+    <div id="report"></div>
+</div>
+
+<script>
+const inputs = document.querySelectorAll("input");
+
+inputs.forEach((input, index) => {
+    input.addEventListener("keypress", function(e){
+        if(e.key === "Enter"){
+            e.preventDefault();
+            if(index + 1 < inputs.length){
+                inputs[index + 1].focus();
+            }
+        }
+    });
+});
+
+function showError(id, message){
+    document.getElementById(id+"Error").innerText = message;
+    document.getElementById(id).classList.add("error-box");
+}
+
+function clearSingleError(id){
+    document.getElementById(id+"Error").innerText = "";
+    document.getElementById(id).classList.remove("error-box");
+}
+
+// Real-time validation
+document.getElementById("name").addEventListener("input", function(){
+    let value = this.value.trim();
+    if(value === ""){
+        showError("name","Name is required");
+    } else if(!/^[A-Za-z ]+$/.test(value)){
+        showError("name","Only alphabets allowed");
+    } else{
+        clearSingleError("name");
+    }
+});
+
+document.getElementById("roll").addEventListener("input", function(){
+    let value = this.value.trim();
+    if(value < 1 || value > 100){
+        showError("roll","Roll number must be 1-100");
+    } else{
+        clearSingleError("roll");
+    }
+});
+
+document.getElementById("class").addEventListener("input", function(){
+    let value = this.value.trim();
+    if(value < 1 || value > 12){
+        showError("class","Class must be 1-12");
+    } else{
+        clearSingleError("class");
+    }
+});
+
+document.getElementById("section").addEventListener("input", function(){
+    let value = this.value.trim().toUpperCase();
+    if(!/^[A-Z]$/.test(value)){
+        showError("section","Section must be A-Z");
+    } else{
+        clearSingleError("section");
+    }
+});
+
+["math","science","english","computer","hindi"].forEach(subject=>{
+    document.getElementById(subject).addEventListener("input", function(){
+        let value = this.value.trim();
+        if(value < 0 || value > 100){
+            showError(subject,"Marks must be 0-100");
+        } else{
+            clearSingleError(subject);
+        }
+    });
+});
+
+function generateReport(){
+    let name = document.getElementById("name").value.trim();
+    let roll = document.getElementById("roll").value.trim();
+    let className = document.getElementById("class").value.trim();
+    let section = document.getElementById("section").value.trim().toUpperCase();
+
+    let subjects = ["Math","Science","English","Computer","Hindi"];
+    let marks = [
+        Number(document.getElementById("math").value),
+        Number(document.getElementById("science").value),
+        Number(document.getElementById("english").value),
+        Number(document.getElementById("computer").value),
+        Number(document.getElementById("hindi").value)
+    ];
+
+    let total = marks.reduce((a,b)=>a+b,0);
+    let percentage = (total/5).toFixed(2);
+
+    let grade = percentage>=90 ? "A+" :
+                percentage>=80 ? "A" :
+                percentage>=70 ? "B" :
+                percentage>=60 ? "C" :
+                percentage>=50 ? "D" : "Fail";
+
+    let rank = percentage>=95 ? "🏆 School Topper" :
+               percentage>=85 ? "🥇 First Rank" :
+               percentage>=75 ? "🥈 Second Rank" :
+               percentage>=65 ? "🥉 Third Rank" :
+               "⭐ Keep Improving";
+
+    let badge = percentage>=90 ? "🔥 Excellent" :
+                percentage>=75 ? "⭐ Very Good" :
+                percentage>=60 ? "👍 Good" :
+                "📘 Needs Improvement";
+
+    let result = "Pass";
+
+    let report = `
+    <div class="report-sheet">
+        <div class="report-title">
+            <h2>STUDENT RESULT MANAGEMENT SYSTEM</h2>
+            <p>Academic Performance Report</p>
+        </div>
+
+        <div class="student-info">
+            <p><b>Name:</b> ${name}</p>
+            <p><b>Roll No:</b> ${roll}</p>
+            <p><b>Class:</b> ${className}</p>
+            <p><b>Section:</b> ${section}</p>
+            <p><b>Rank:</b> <span class="rank">${rank}</span></p>
+            <p><b>Performance:</b> ${badge}</p>
+        </div>
+
+        <table class="marks-table">
+            <tr>
+                <th>Subject</th>
+                <th>Marks</th>
+                <th>Status</th>
+            </tr>
+    `;
+
+    for(let i=0;i<subjects.length;i++){
+        let status = marks[i] >= 33 ? "Pass" : "Fail";
+        if(marks[i] < 33) result = "Fail";
+
+        report += `
+        <tr>
+            <td>${subjects[i]}</td>
+            <td>${marks[i]}</td>
+            <td>${status}</td>
+        </tr>`;
+    }
+
+    report += `
+        </table>
+
+        <div class="summary">
+            <p><b>Total Marks:</b> ${total}/500</p>
+            <p><b>Percentage:</b> ${percentage}%</p>
+            <p><b>Grade:</b> ${grade}</p>
+            <p><b>Final Result:</b> ${result}</p>
+        </div>
+    </div>`;
+
+    document.getElementById("report").innerHTML = report;
+}
+</script>
+
+</body>
+</html>
